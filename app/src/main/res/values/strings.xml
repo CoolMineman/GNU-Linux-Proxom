@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Proxom</string>
+    <string name="textview"><b>Broadcasting: stopped</b></string>
+    <string name="textview2"><b>Proxy: stopped</b></string>
+</resources>
