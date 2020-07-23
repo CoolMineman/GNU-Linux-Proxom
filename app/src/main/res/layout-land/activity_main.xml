@@ -20,6 +20,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:ems="10"
+        android:importantForAutofill="no"
         android:inputType="textPersonName"
         android:text="@string/server_ip_address"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
@@ -27,7 +28,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        android:importantForAutofill="no"
         tools:ignore="LabelFor" />
 
     <Button
@@ -38,8 +38,8 @@
         android:layout_marginEnd="15dp"
         android:text="@string/stop_broadcasting"
         app:layout_constraintBottom_toTopOf="@+id/serverIpAddress"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline5"
+        app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9" />
 
@@ -50,8 +50,8 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:text="@string/button"
-        app:layout_constraintBottom_toTopOf="@+id/stopBroadcastingButton"
-        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintBottom_toTopOf="@+id/serverIpAddress"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9" />
@@ -63,18 +63,11 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:text="@string/buttonStop"
-        app:layout_constraintBottom_toTopOf="@+id/stopBroadcastingButton"
+        app:layout_constraintBottom_toTopOf="@+id/serverIpAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline3"
@@ -106,5 +99,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/broadcastingStatus"
         app:layout_constraintVertical_bias="0.100000024" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
