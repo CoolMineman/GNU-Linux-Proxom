@@ -13,7 +13,7 @@ public class ProxomService extends Service {
     private static BroadcastingThread broadcastingThread = null;
 
     static private String serverAddress = null;
-    static private boolean proxyRunning = false;
+    static volatile private boolean proxyRunning = false;
     static volatile private boolean broadcastingRunning = false;
 
     static void setServerAddress(String serverAddress){
