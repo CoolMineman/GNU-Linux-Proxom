@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 public class ProxomService extends Service {
     private MediaPlayer player;
-    private BroadcastingThread broadcastingThread = null;
+    private static BroadcastingThread broadcastingThread = null;
 
     static private String serverAddress = null;
     static private boolean proxyRunning = false;
@@ -40,6 +40,10 @@ public class ProxomService extends Service {
         return proxyRunning;
     }
 
+    static void stopBroadcasting(){
+        broadcastingThread.stopThread();
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return  null;
@@ -64,7 +68,7 @@ public class ProxomService extends Service {
         super.onDestroy();
 
         player.stop();
-        broadcastingThread.stopThread();
+        stopBroadcasting();
 
 
         Toast.makeText(this, "Proxy stopped", Toast.LENGTH_SHORT).show();
