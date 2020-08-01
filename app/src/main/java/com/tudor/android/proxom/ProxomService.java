@@ -62,6 +62,7 @@ public class ProxomService extends Service {
         player.start();
 
         broadcastingThread.startThread();
+        proxyThread.startThread(serverAddress);
 
         Toast.makeText(this, "Proxy started", Toast.LENGTH_SHORT).show();
         return START_NOT_STICKY;
@@ -71,7 +72,8 @@ public class ProxomService extends Service {
         super.onDestroy();
 
         player.stop();
-        stopBroadcasting();
+        broadcastingThread.stopThread();
+        proxyThread.stopThread();
 
 
         Toast.makeText(this, "Proxy stopped", Toast.LENGTH_SHORT).show();
