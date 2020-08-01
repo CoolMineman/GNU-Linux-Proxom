@@ -10,7 +10,9 @@ import android.widget.Toast;
 
 public class ProxomService extends Service {
     private MediaPlayer player;
+
     private static BroadcastingThread broadcastingThread = null;
+    private static ProxyThread proxyThread = null;
 
     static private String serverAddress = null;
     static volatile private boolean proxyRunning = false;
@@ -33,7 +35,7 @@ public class ProxomService extends Service {
     }
 
     static void setProxyStatus(boolean status){
-        proxyRunning = true;
+        proxyRunning = status;
     }
 
     static  boolean getProxyStatus(){
@@ -51,6 +53,7 @@ public class ProxomService extends Service {
     @Override
     public void onCreate() {
         broadcastingThread = new BroadcastingThread();
+        proxyThread = new ProxyThread();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
