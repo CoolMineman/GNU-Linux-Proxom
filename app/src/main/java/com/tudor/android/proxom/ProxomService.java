@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 public class ProxomService extends Service {
     private MediaPlayer player;
+    private BroadcastingThread broadcastingThread = null;
 
     static private String serverAddress = null;
     static private boolean proxyRunning = false;
@@ -45,23 +46,27 @@ public class ProxomService extends Service {
     }
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Service was Created", Toast.LENGTH_SHORT).show();
+        broadcastingThread = new BroadcastingThread();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         player = MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
-        // This will play the ringtone continuously until we stop the service.
         player.setLooping(true);
-        // It will start the player
         player.start();
-        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+
+        broadcastingThread.startThread();
+
+        Toast.makeText(this, "Proxy started", Toast.LENGTH_SHORT).show();
         return START_NOT_STICKY;
     }
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // Stopping the player when service is destroyed
-        //  player.stop();
-        Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
+
+        player.stop();
+        broadcastingThread.stopThread();
+
+
+        Toast.makeText(this, "Proxy stopped", Toast.LENGTH_SHORT).show();
     }
 }
