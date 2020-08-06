@@ -11,6 +11,8 @@ import android.widget.Toast;
 public class ProxomService extends Service {
     private MediaPlayer player;
 
+    private static ProxomService thisService = null;
+
     private static BroadcastingThread broadcastingThread = null;
     private static ProxyThread proxyThread = null;
 
@@ -44,6 +46,7 @@ public class ProxomService extends Service {
 
     static void stopBroadcasting(){
         broadcastingThread.stopThread();
+        Toast.makeText(thisService, "Starting proxy", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -53,6 +56,8 @@ public class ProxomService extends Service {
     }
     @Override
     public void onCreate() {
+        thisService = this;
+
         broadcastingThread = new BroadcastingThread();
         proxyThread = new ProxyThread();
     }
@@ -66,6 +71,7 @@ public class ProxomService extends Service {
         proxyThread.startThread(serverAddress);
 
         Toast.makeText(this, "Starting proxy", Toast.LENGTH_SHORT).show();
+
         return START_NOT_STICKY;
     }
     @Override
