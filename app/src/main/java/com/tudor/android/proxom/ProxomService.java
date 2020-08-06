@@ -4,12 +4,16 @@ package com.tudor.android.proxom;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 public class ProxomService extends Service {
     private MediaPlayer player;
+    private final long FINISHING_PROXY_TIME = 1200;
 
     private static ProxomService thisService = null;
 
@@ -19,6 +23,8 @@ public class ProxomService extends Service {
     private static String serverAddress = null;
     private static volatile boolean proxyRunning = false;
     private static volatile boolean broadcastingRunning = false;
+
+    private Handler forceQuitHandler = null;
 
     static void setServerAddress(String serverAddress){
         ProxomService.serverAddress = serverAddress;
@@ -40,26 +46,28 @@ public class ProxomService extends Service {
         proxyRunning = status;
     }
 
-    static  boolean getProxyStatus(){
+    static boolean getProxyStatus(){
         return proxyRunning;
     }
 
     static void stopBroadcasting(){
         broadcastingThread.stopThread();
-        Toast.makeText(thisService, "Starting proxy", Toast.LENGTH_SHORT).show();
+        Toast.makeText(thisService, "Stopping broadcasting", Toast.LENGTH_SHORT).show();
     }
 
-
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return  null;
     }
+
     @Override
     public void onCreate() {
         thisService = this;
 
         broadcastingThread = new BroadcastingThread();
         proxyThread = new ProxyThread();
+        forceQuitHandler = new Handler();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -70,7 +78,7 @@ public class ProxomService extends Service {
         broadcastingThread.startThread();
         proxyThread.startThread(serverAddress);
 
-        Toast.makeText(this, "Starting proxy", Toast.LENGTH_SHORT).show();
+        Toast.makeText(thisService, "Starting proxy", Toast.LENGTH_SHORT).show();
 
         return START_NOT_STICKY;
     }
@@ -83,6 +91,15 @@ public class ProxomService extends Service {
         proxyThread.stopThread();
 
 
-        Toast.makeText(this, "Stopping proxy", Toast.LENGTH_SHORT).show();
+        Toast.makeText(thisService, "Stopping proxy", Toast.LENGTH_SHORT).show();
+
+
+        forceQuitHandler.postDelayed(new Thread() {
+            @Override
+            public void run() {
+                if (getProxyStatus())
+                    System.exit(0);
+            }
+        }, FINISHING_PROXY_TIME);
     }
 }
