@@ -8,6 +8,7 @@ public class ProxyThread extends Thread {
     private Thread runningThread = null;
 
     private String serverAddress = null;
+
     private native void runProxy(String ServerAddress);
     private native void stopProxy();
 
@@ -20,7 +21,11 @@ public class ProxyThread extends Thread {
 
     @Override
     public void run(){
+        ProxomService.setProxyStatus(true);
+
         runProxy(serverAddress);
+
+        ProxomService.setProxyStatus(false);
     }
 
     public void stopThread(){

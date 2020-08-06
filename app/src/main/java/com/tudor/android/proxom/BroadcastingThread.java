@@ -7,18 +7,19 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.io.File;
 import java.io.PrintStream;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class BroadcastingThread extends Thread {
-    private Thread runningThread = null;
-    private volatile boolean running = false;
+    private ScheduledExecutorService runningScheduledThread = null;
 
     private DatagramPacket broadcastingPacket = null;
     private DatagramSocket broadcastingSocket = null;
-    private final int broadcastingPort = 47777;
-    private final String broadcastingAddressString = "255.255.255.255";
+    private final int BROADCASTING_PORT = 47777;
+    private final String BROADCASTING_ADDRESS_STRING = "255.255.255.255";
     private InetAddress broadcastingAddress = null;
     private String broadcastingMessage = "Server~Open~1~";
     private byte buffMessage[] = null;
@@ -27,8 +28,6 @@ public class BroadcastingThread extends Thread {
     PrintStream writingStream = null;
 
     public void startThread(){
-        running = true;
-
         writingFile = new File ("/sdcard/ProxomBroadcastingLog.txt");
         try {
             writingStream = new PrintStream(writingFile);
@@ -50,42 +49,32 @@ public class BroadcastingThread extends Thread {
         buffMessage = new String(String.valueOf(aux) + broadcastingMessage).getBytes();
 
         try {
-            broadcastingAddress = InetAddress.getByName(broadcastingAddressString);
+            broadcastingAddress = InetAddress.getByName(BROADCASTING_ADDRESS_STRING);
         } catch (UnknownHostException e) {
             writingStream.println("Could not create the broadcasting address");
         }
 
-        broadcastingPacket = new DatagramPacket(buffMessage, buffMessage.length, broadcastingAddress, broadcastingPort);
+        broadcastingPacket = new DatagramPacket(buffMessage, buffMessage.length, broadcastingAddress, BROADCASTING_PORT);
 
-        runningThread = new Thread(this);
-        runningThread.start();
+        runningScheduledThread = Executors.newScheduledThreadPool(1);
+        runningScheduledThread.scheduleAtFixedRate(this, 0, 1, TimeUnit.SECONDS);
+
+        ProxomService.setBroadcastingStatus(true);
     }
 
     @Override
     public void run(){
-
-        ProxomService.setBroadcastingStatus(true);
-
-        while (running){
-            try {
-                broadcastingSocket.send(broadcastingPacket);
-            } catch (IOException e) {
-                writingStream.println("Could not send the packet");
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
+        try {
+            broadcastingSocket.send(broadcastingPacket);
+        } catch (IOException e) {
+            writingStream.println("Could not send the packet");
         }
 
-        ProxomService.setBroadcastingStatus(false);
     }
 
     public void stopThread(){
-        running = false;
+        runningScheduledThread.shutdown();
+        ProxomService.setBroadcastingStatus(false);
     }
 
 }

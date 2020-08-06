@@ -12,8 +12,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class MainActivity extends AppCompatActivity {
-    private final long ACTIVITY_HANDLER_TIME = 2000;
+    private final long ACTIVITY_HANDLER_TIME = 800;
 
     private Button buttonStart = null;
     private Button buttonStop = null;
@@ -22,17 +26,17 @@ public class MainActivity extends AppCompatActivity {
     private TextView statusBroadcasting = null;
     private TextView statusProxy = null;
 
-    private Handler activityHandler = null;
+    private ScheduledExecutorService activityHandler = null;
 
+    private boolean waitForRefresh = false;
 
-    boolean skipRefresh = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        activityHandler = new Handler();
+        activityHandler = Executors.newScheduledThreadPool(1);
 
         buttonStart = findViewById(R.id.startButton);
         buttonStop = findViewById(R.id.stopButton);
@@ -44,12 +48,13 @@ public class MainActivity extends AppCompatActivity {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ProxomService.setServerAddress(ipAddressServer.getText().toString());
-                startService(new Intent(getApplicationContext(), ProxomService.class));
-                buttonStart.setEnabled(false);
-                ipAddressServer.setEnabled(false);
-                buttonStop.setEnabled(true);
-                buttonStopBroadcasting.setEnabled(true);
+
+                if (!waitForRefresh) {
+                    ProxomService.setServerAddress(ipAddressServer.getText().toString());
+                    startService(new Intent(getApplicationContext(), ProxomService.class));
+
+                    waitForRefresh = true;
+                }
             }
         });
 
@@ -67,15 +72,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        buttonStop.setEnabled(false);
-        buttonStopBroadcasting.setEnabled(false);
-
         startActivityHandler();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
+
         stopActivityHandler();
     }
 
@@ -83,63 +86,77 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
-        boolean currentProxyStatus = ProxomService.getProxyStatus();
-
-        if (currentBroadcastingStatus) {
-            statusBroadcasting.setText("Broadcasting: running");
-            statusBroadcasting.setTypeface(null, Typeface.BOLD);
-        }
-        else {
-            statusBroadcasting.setText("Broadcasting: stopped");
-            statusBroadcasting.setTypeface(null, Typeface.BOLD);
-        }
-
-        if (currentProxyStatus){
-            statusProxy.setText("Proxy: running");
-            statusProxy.setTypeface(null, Typeface.BOLD);
-        }
-        else{
-            statusProxy.setText("Proxy: stopped");
-            statusProxy.setTypeface(null, Typeface.BOLD);
-        }
+        startActivityHandler();
     }
 
 
     private void startActivityHandler(){
-        activityHandler.postDelayed(new Runnable() {
+        activityHandler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if (skipRefresh) skipRefresh = false;
-                else{
-                    boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
-                    boolean currentProxyStatus = ProxomService.getProxyStatus();
+                boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
+                boolean currentProxyStatus = ProxomService.getProxyStatus();
 
-                    if (currentBroadcastingStatus) {
-                        statusBroadcasting.setText("Broadcasting: running");
-                        statusBroadcasting.setTypeface(null, Typeface.BOLD);
-                    }
-                    else {
-                        statusBroadcasting.setText("Broadcasting: stopped");
-                        statusBroadcasting.setTypeface(null, Typeface.BOLD);
-                    }
-
-                    if (currentProxyStatus){
-                        statusProxy.setText("Proxy: running");
-                        statusProxy.setTypeface(null, Typeface.BOLD);
-                    }
-                    else{
-                        statusProxy.setText("Proxy: stopped");
-                        statusProxy.setTypeface(null, Typeface.BOLD);
-                    }
+                if (currentBroadcastingStatus) {
+                    statusBroadcasting.setText("Broadcasting: running");
+                    statusBroadcasting.setTypeface(null, Typeface.BOLD);
+                }
+                else {
+                    statusBroadcasting.setText("Broadcasting: stopped");
+                    statusBroadcasting.setTypeface(null, Typeface.BOLD);
                 }
 
-                activityHandler.postDelayed(this, ACTIVITY_HANDLER_TIME);
+                if (currentProxyStatus){
+                    statusProxy.setText("Proxy: running");
+                    statusProxy.setTypeface(null, Typeface.BOLD);
+                }
+                else{
+                    statusProxy.setText("Proxy: stopped");
+                    statusProxy.setTypeface(null, Typeface.BOLD);
+                }
+
+                if (buttonStart.isEnabled() && (currentProxyStatus || currentBroadcastingStatus)){
+                    buttonStart.setEnabled(false);
+                }
+
+                if (ipAddressServer.isEnabled() && (currentProxyStatus || currentBroadcastingStatus)){
+                    ipAddressServer.setEnabled(false);
+                }
+
+                if (buttonStopBroadcasting.isEnabled() == false && currentBroadcastingStatus){
+                    buttonStopBroadcasting.setEnabled(true);
+                }
+
+                if(buttonStop.isEnabled() == false && currentProxyStatus){
+                    buttonStop.setEnabled(true);
+                }
+
+                if(buttonStopBroadcasting.isEnabled() && (!currentBroadcastingStatus)){
+                    buttonStopBroadcasting.setEnabled(false);
+                }
+
+                if (buttonStop.isEnabled() && (!currentProxyStatus)){
+                    buttonStop.setEnabled(false);
+                }
+
+                if (ipAddressServer.isEnabled() == false && !(currentProxyStatus || currentBroadcastingStatus)) {
+                    ipAddressServer.setEnabled(true);
+                }
+
+                if (buttonStart.isEnabled() == false && !(currentProxyStatus || currentBroadcastingStatus)){
+                    buttonStart.setEnabled(true);
+                }
+
+
+                waitForRefresh = false;
+
+                System.out.println("Here...");
+
             }
-        }, ACTIVITY_HANDLER_TIME);
+        }, 0, ACTIVITY_HANDLER_TIME, TimeUnit.MILLISECONDS);
     }
 
     private void stopActivityHandler(){
-        activityHandler.removeCallbacksAndMessages(null);
+        activityHandler.shutdown();
     }
 }

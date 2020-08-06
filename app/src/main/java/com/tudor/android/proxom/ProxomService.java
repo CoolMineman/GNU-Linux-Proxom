@@ -14,9 +14,9 @@ public class ProxomService extends Service {
     private static BroadcastingThread broadcastingThread = null;
     private static ProxyThread proxyThread = null;
 
-    static private String serverAddress = null;
-    static volatile private boolean proxyRunning = false;
-    static volatile private boolean broadcastingRunning = false;
+    private static String serverAddress = null;
+    private static volatile boolean proxyRunning = false;
+    private static volatile boolean broadcastingRunning = false;
 
     static void setServerAddress(String serverAddress){
         ProxomService.serverAddress = serverAddress;
@@ -46,6 +46,7 @@ public class ProxomService extends Service {
         broadcastingThread.stopThread();
     }
 
+
     @Override
     public IBinder onBind(Intent intent) {
         return  null;
@@ -64,7 +65,7 @@ public class ProxomService extends Service {
         broadcastingThread.startThread();
         proxyThread.startThread(serverAddress);
 
-        Toast.makeText(this, "Proxy started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Starting proxy", Toast.LENGTH_SHORT).show();
         return START_NOT_STICKY;
     }
     @Override
@@ -76,6 +77,6 @@ public class ProxomService extends Service {
         proxyThread.stopThread();
 
 
-        Toast.makeText(this, "Proxy stopped", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Stopping proxy", Toast.LENGTH_SHORT).show();
     }
 }
