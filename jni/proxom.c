@@ -125,7 +125,6 @@ void std_err(void);
 
 
 const int portAmongUs = 22023;
-char destinationHostAux[100];
 int running = 1;
 
 JNIEXPORT void JNICALL Java_com_tudor_android_proxom_ProxyThread_stopProxy
