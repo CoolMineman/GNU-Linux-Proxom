@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
             permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE);
 
 
-        String permissionsToRequestArray[] = permissionsToRequest.toArray(new String[permissionsToRequest.size()]);
+        String[] permissionsToRequestArray = permissionsToRequest.toArray(new String[0]);
         requestPermissions(permissionsToRequestArray);
     }
 
