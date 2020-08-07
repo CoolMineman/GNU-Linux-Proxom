@@ -1,10 +1,14 @@
 package com.tudor.android.proxom;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,12 +18,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private final long ACTIVITY_HANDLER_TIME = 800;
+
+    private final int PERMISSIONS_REQUEST_CODE = 173;
+
 
     private Button buttonStart = null;
     private Button buttonStop = null;
@@ -38,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        checkPermissions();
 
         activityHandler = new Handler();
 
@@ -154,8 +164,6 @@ public class MainActivity extends AppCompatActivity {
         activityHandler.postDelayed(new Thread() {
             @Override
             public void run() {
-                System.out.println("Here");
-
                 boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
                 boolean currentProxyStatus = ProxomService.getProxyStatus();
 
@@ -219,5 +227,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopActivityHandler(){
        activityHandler.removeCallbacksAndMessages(null);
+    }
+
+    private void checkPermissions(){
+        ArrayList <String> permissionsToRequest = new ArrayList<String>();
+
+        int permission;
+
+        permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED);
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED);
+            permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET);
+        if (permission != PackageManager.PERMISSION_GRANTED);
+            permissionsToRequest.add(Manifest.permission.INTERNET);
+
+        permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.FOREGROUND_SERVICE);
+        if (permission != PackageManager.PERMISSION_GRANTED);
+            permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE);
+
+
+        String permissionsToRequestArray[] = permissionsToRequest.toArray(new String[permissionsToRequest.size()]);
+        requestPermissions(permissionsToRequestArray);
+    }
+
+    private void requestPermissions(String []permissionsToRequest){
+        ActivityCompat.requestPermissions(MainActivity.this, permissionsToRequest, PERMISSIONS_REQUEST_CODE);
     }
 }
