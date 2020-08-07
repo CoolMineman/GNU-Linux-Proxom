@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -230,26 +231,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermissions(){
-        ArrayList <String> permissionsToRequest = new ArrayList<String>();
+        ArrayList <String> permissionsToRequest = new ArrayList<>();
 
         int permission;
 
         permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED);
+        if (permission != PackageManager.PERMISSION_GRANTED)
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
 
         permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED);
+        if (permission != PackageManager.PERMISSION_GRANTED)
             permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET);
-        if (permission != PackageManager.PERMISSION_GRANTED);
+        if (permission != PackageManager.PERMISSION_GRANTED)
             permissionsToRequest.add(Manifest.permission.INTERNET);
 
-        permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.FOREGROUND_SERVICE);
-        if (permission != PackageManager.PERMISSION_GRANTED);
-            permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            permission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.FOREGROUND_SERVICE);
+            if (permission != PackageManager.PERMISSION_GRANTED)
+                permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
 
         String[] permissionsToRequestArray = permissionsToRequest.toArray(new String[0]);
         requestPermissions(permissionsToRequestArray);
