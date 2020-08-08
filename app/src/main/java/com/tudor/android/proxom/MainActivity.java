@@ -258,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(permissionsToRequestArray);
         }
 
-        System.out.println("Hereee");
     }
 
     private void requestPermissions(String []permissionsToRequest){
