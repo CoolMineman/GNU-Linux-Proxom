@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!waitForRefresh) {
                     ProxomService.setServerAddress(ipAddressServer.getText().toString());
-                    startService(new Intent(getApplicationContext(), ProxomService.class));
+                    ContextCompat.startForegroundService(getApplicationContext(), new Intent(getApplicationContext(), ProxomService.class));
 
                     waitForRefresh = true;
                 }
