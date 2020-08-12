@@ -22,6 +22,8 @@ import androidx.core.app.NotificationCompat;
 public class ProxomService extends Service {
     private MediaPlayer player;
     private final long FINISHING_PROXY_TIME = 1500;
+    private final long CHANGE_BUTTON_TIME = 1000;
+    private final long CHECK_TIME = 2500;
 
     private static ProxomService thisService = null;
 
@@ -33,6 +35,7 @@ public class ProxomService extends Service {
     private static volatile boolean broadcastingRunning = false;
 
     private Handler forceQuitHandler = null;
+    private Handler notificationUpdateHandler = null;
 
     private Intent notificationIntent = null;
     private PendingIntent pendingIntent = null;
@@ -92,6 +95,7 @@ public class ProxomService extends Service {
         proxyThread = new ProxyThread();
 
         forceQuitHandler = new Handler();
+        notificationUpdateHandler = new Handler();
 
         notificationIntent = new Intent (thisService, MainActivity.class);
         pendingIntent = PendingIntent.getActivity(thisService, 0, notificationIntent, 0);
@@ -101,7 +105,6 @@ public class ProxomService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChannel();
         createNotification();
-        startNotification();
 
         player = MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
         player.setLooping(true);
@@ -148,7 +151,7 @@ public class ProxomService extends Service {
         }
     }
 
-    private void createNotification(){
+    void createNotification(){
 
         buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
         buttonIntent.putExtra("action", "STOP_BROADCASTING");
@@ -159,20 +162,52 @@ public class ProxomService extends Service {
         notificationBuilder
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.mipmap.ic_launcher))
-                .setContentTitle("Proxy and broadcasting running")
+                .setContentTitle("Proxy and broadcasting are running")
                 .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addAction(0, "Stop broadcasting", buttonPendingIntent);
 
         notification = notificationBuilder.build();
 
-    }
-
-    private void startNotification(){
         startForeground(NOTIFICATION_ID, notification);
     }
 
-    private void updateNotificationAfterBroadcasting(){
 
+    void updateNotificationAfterBroadcasting(){
+        buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
+        buttonIntent.putExtra("action", "STOP_PROXY");
+        buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notificationBuilder.clearAllActions();
+
+        notificationBuilder
+                .setContentTitle("Proxy is running");
+
+        notification = notificationBuilder.build();
+
+
+        startForeground(NOTIFICATION_ID, notification);
+
+        notificationUpdateHandler.postDelayed(new Thread() {
+            @Override
+            public void run() {
+                notificationBuilder
+                        .addAction(0, "Stop proxy", buttonPendingIntent);
+
+                notification = notificationBuilder.build();
+
+                startForeground(NOTIFICATION_ID, notification);
+
+
+                notificationUpdateHandler.postDelayed(new Thread() {
+                    @Override
+                    public void run() {
+                        if (getBroadcastingStatus())
+                            createNotification();
+                    }
+                }, CHECK_TIME);
+            }
+        },CHANGE_BUTTON_TIME);
     }
 
 }
