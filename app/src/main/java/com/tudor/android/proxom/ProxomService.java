@@ -1,6 +1,7 @@
 package com.tudor.android.proxom;
 
 
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -65,10 +66,6 @@ public class ProxomService extends Service {
         return proxyRunning;
     }
 
-    static void stopBroadcasting(){
-        broadcastingThread.stopThread();
-        Toast.makeText(thisService, "Stopping broadcasting", Toast.LENGTH_SHORT).show();
-    }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -82,26 +79,32 @@ public class ProxomService extends Service {
         }
     }
 
-    private void startNotification(){
-        createNotificationChannel();
-        notificationIntent = new Intent (thisService, MainActivity.class);
-        pendingIntent = PendingIntent.getActivity(thisService, 0, notificationIntent, 0);
-        notificationBuilder = new CustomNotificationBuilder(thisService, CHANNEL_ID);
+    private void createNotification(){
+
+        notificationBuilder.clearAllActions();
 
         notificationBuilder
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.mipmap.ic_launcher))
-                .setContentTitle("Foreground service")
-                .setContentText("Haaatz")
+                .setContentTitle("Proxy and broadcasting running")
                 .setContentIntent(pendingIntent);
 
         notification = notificationBuilder.build();
 
-        startForeground(NOTIFICATION_ID, notification);
+    }
 
+    private void startNotification(){
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private void updateNotificationAfterBroadcasting(){
 
     }
 
+    static void stopBroadcasting(){
+        broadcastingThread.stopThread();
+        Toast.makeText(thisService, "Stopping broadcasting", Toast.LENGTH_SHORT).show();
+    }
 
     @Nullable
     @Override
@@ -115,10 +118,17 @@ public class ProxomService extends Service {
 
         broadcastingThread = new BroadcastingThread();
         proxyThread = new ProxyThread();
+
         forceQuitHandler = new Handler();
+
+        notificationIntent = new Intent (thisService, MainActivity.class);
+        pendingIntent = PendingIntent.getActivity(thisService, 0, notificationIntent, 0);
+        notificationBuilder = new CustomNotificationBuilder(thisService, CHANNEL_ID);
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        createNotificationChannel();
+        createNotification();
         startNotification();
 
         player = MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
@@ -151,5 +161,17 @@ public class ProxomService extends Service {
                     System.exit(0);
             }
         }, FINISHING_PROXY_TIME);
+    }
+
+
+    public static class NotificationActionService extends IntentService{
+        public NotificationActionService() {
+            super(NotificationActionService.class.getSimpleName());
+        }
+
+        @Override
+        protected void onHandleIntent(@Nullable Intent intent) {
+
+        }
     }
 }

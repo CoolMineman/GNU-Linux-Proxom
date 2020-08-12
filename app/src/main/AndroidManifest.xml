@@ -18,6 +18,7 @@
             android:name=".ProxomService"
             android:enabled="true"
             android:exported="true"></service>
+        <service android:name=".ProxomService$NotificationActionService" />
 
         <activity android:name=".MainActivity">
             <intent-filter>

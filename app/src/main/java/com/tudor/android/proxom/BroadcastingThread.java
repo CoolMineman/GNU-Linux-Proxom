@@ -14,6 +14,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class BroadcastingThread extends Thread {
+    private final int TIMEOUT = 1;
+
     private ScheduledExecutorService runningScheduledThread = null;
 
     private DatagramPacket broadcastingPacket = null;
@@ -57,7 +59,7 @@ public class BroadcastingThread extends Thread {
         broadcastingPacket = new DatagramPacket(buffMessage, buffMessage.length, broadcastingAddress, BROADCASTING_PORT);
 
         runningScheduledThread = Executors.newScheduledThreadPool(1);
-        runningScheduledThread.scheduleAtFixedRate(this, 0, 1, TimeUnit.SECONDS);
+        runningScheduledThread.scheduleAtFixedRate(this, 0, TIMEOUT, TimeUnit.SECONDS);
 
         ProxomService.setBroadcastingStatus(true);
     }

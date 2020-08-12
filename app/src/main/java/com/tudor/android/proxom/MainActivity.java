@@ -159,6 +159,9 @@ public class MainActivity extends AppCompatActivity {
             buttonStart.setEnabled(true);
         }
 
+        if (ipAddressServer.getText().toString().trim().length() == 0 && (currentProxyStatus || currentBroadcastingStatus))
+            ipAddressServer.setText(ProxomService.getServerAddress());
+
 
         waitForRefresh = false;
 
@@ -218,6 +221,8 @@ public class MainActivity extends AppCompatActivity {
                     buttonStart.setEnabled(true);
                 }
 
+                if (ipAddressServer.getText().toString().trim().length() == 0 && (currentProxyStatus || currentBroadcastingStatus))
+                    ipAddressServer.setText(ProxomService.getServerAddress());
 
                 waitForRefresh = false;
 
