@@ -39,6 +39,9 @@ public class ProxomService extends Service {
     private Notification notification = null;
     private CustomNotificationBuilder notificationBuilder = null;
 
+    private Intent buttonIntent = null;
+    private PendingIntent buttonPendingIntent = null;
+
     private final String CHANNEL_ID = "ProxomNotification";
     private final int NOTIFICATION_ID = 1;
 
@@ -66,39 +69,8 @@ public class ProxomService extends Service {
         return proxyRunning;
     }
 
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Proxom Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
-        }
-    }
-
-    private void createNotification(){
-
-        notificationBuilder.clearAllActions();
-
-        notificationBuilder
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.mipmap.ic_launcher))
-                .setContentTitle("Proxy and broadcasting running")
-                .setContentIntent(pendingIntent);
-
-        notification = notificationBuilder.build();
-
-    }
-
-    private void startNotification(){
-        startForeground(NOTIFICATION_ID, notification);
-    }
-
-    private void updateNotificationAfterBroadcasting(){
-
+    static ProxomService getInstance(){
+        return thisService;
     }
 
     static void stopBroadcasting(){
@@ -164,14 +136,43 @@ public class ProxomService extends Service {
     }
 
 
-    public static class NotificationActionService extends IntentService{
-        public NotificationActionService() {
-            super(NotificationActionService.class.getSimpleName());
-        }
-
-        @Override
-        protected void onHandleIntent(@Nullable Intent intent) {
-
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Proxom Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
         }
     }
+
+    private void createNotification(){
+
+        buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
+        buttonIntent.putExtra("action", "STOP_BROADCASTING");
+        buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notificationBuilder.clearAllActions();
+
+        notificationBuilder
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.mipmap.ic_launcher))
+                .setContentTitle("Proxy and broadcasting running")
+                .setContentIntent(pendingIntent)
+                .addAction(0, "Stop broadcasting", buttonPendingIntent);
+
+        notification = notificationBuilder.build();
+
+    }
+
+    private void startNotification(){
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private void updateNotificationAfterBroadcasting(){
+
+    }
+
 }

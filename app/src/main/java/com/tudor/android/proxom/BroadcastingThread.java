@@ -15,13 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 public class BroadcastingThread extends Thread {
     private final int TIMEOUT = 1;
+    private final int BROADCASTING_PORT = 47777;
+    private final String BROADCASTING_ADDRESS_STRING = "255.255.255.255";
 
     private ScheduledExecutorService runningScheduledThread = null;
 
     private DatagramPacket broadcastingPacket = null;
     private DatagramSocket broadcastingSocket = null;
-    private final int BROADCASTING_PORT = 47777;
-    private final String BROADCASTING_ADDRESS_STRING = "255.255.255.255";
     private InetAddress broadcastingAddress = null;
     private String broadcastingMessage = "Server~Open~1~";
     private byte buffMessage[] = null;
