@@ -20,7 +20,7 @@ import androidx.core.app.NotificationCompat;
 
 public class ProxomService extends Service {
     private MediaPlayer player;
-    private final long FINISHING_PROXY_TIME = 1200;
+    private final long FINISHING_PROXY_TIME = 1500;
 
     private static ProxomService thisService = null;
 
@@ -36,7 +36,7 @@ public class ProxomService extends Service {
     private Intent notificationIntent = null;
     private PendingIntent pendingIntent = null;
     private Notification notification = null;
-    private NotificationCompat.Builder notificationBuilder = null;
+    private CustomNotificationBuilder notificationBuilder = null;
 
     private final String CHANNEL_ID = "ProxomNotification";
     private final int NOTIFICATION_ID = 1;
@@ -86,7 +86,7 @@ public class ProxomService extends Service {
         createNotificationChannel();
         notificationIntent = new Intent (thisService, MainActivity.class);
         pendingIntent = PendingIntent.getActivity(thisService, 0, notificationIntent, 0);
-        notificationBuilder = new NotificationCompat.Builder(thisService, CHANNEL_ID);
+        notificationBuilder = new CustomNotificationBuilder(thisService, CHANNEL_ID);
 
         notificationBuilder
                 .setSmallIcon(R.mipmap.ic_launcher)
