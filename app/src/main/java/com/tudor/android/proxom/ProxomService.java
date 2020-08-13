@@ -25,7 +25,7 @@ public class ProxomService extends Service {
     private final long CHANGE_BUTTON_TIME = 1000;
     private final long CHECK_TIME = 2500;
 
-    private static ProxomService thisService = null;
+    private volatile static ProxomService thisService = null;
 
     private BroadcastingThread broadcastingThread = null;
     private ProxyThread proxyThread = null;
