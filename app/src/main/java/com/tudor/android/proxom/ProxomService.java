@@ -130,8 +130,10 @@ public class ProxomService extends Service {
         forceQuitHandler.postDelayed(new Thread() {
             @Override
             public void run() {
-                if (getProxyStatus())
+                if (getProxyStatus()) {
+                    setProxyStatus(false);
                     System.exit(0);
+                }
             }
         }, FINISHING_PROXY_TIME);
     }
