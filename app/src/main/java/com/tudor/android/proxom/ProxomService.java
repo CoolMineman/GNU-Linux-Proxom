@@ -27,12 +27,12 @@ public class ProxomService extends Service {
 
     private static ProxomService thisService = null;
 
-    private static BroadcastingThread broadcastingThread = null;
-    private static ProxyThread proxyThread = null;
+    private BroadcastingThread broadcastingThread = null;
+    private ProxyThread proxyThread = null;
 
-    private static String serverAddress = null;
-    private static volatile boolean proxyRunning = false;
-    private static volatile boolean broadcastingRunning = false;
+    private String serverAddress = null;
+    private volatile boolean proxyRunning = false;
+    private volatile boolean broadcastingRunning = false;
 
     private Handler forceQuitHandler = null;
     private Handler notificationUpdateHandler = null;
@@ -48,36 +48,33 @@ public class ProxomService extends Service {
     private final String CHANNEL_ID = "ProxomNotification";
     private final int NOTIFICATION_ID = 1;
 
-    static void setServerAddress(String serverAddress){
-        ProxomService.serverAddress = serverAddress;
-    }
-
-    static String getServerAddress(){
-        return serverAddress;
-    }
-
-    static void setBroadcastingStatus(boolean status){
-        broadcastingRunning = status;
-    }
-
-    static boolean getBroadcastingStatus(){
-        return broadcastingRunning;
-    }
-
-    static void setProxyStatus(boolean status){
-        proxyRunning = status;
-    }
-
-    static boolean getProxyStatus(){
-        return proxyRunning;
-    }
-
     static ProxomService getInstance(){
         return thisService;
     }
 
-    static void stopBroadcasting(){
+    String getServerAddress(){
+        return serverAddress;
+    }
+
+    void setBroadcastingStatus(boolean status){
+        broadcastingRunning = status;
+    }
+
+    boolean getBroadcastingStatus(){
+        return broadcastingRunning;
+    }
+
+    void setProxyStatus(boolean status){
+        proxyRunning = status;
+    }
+
+    boolean getProxyStatus(){
+        return proxyRunning;
+    }
+
+    void stopBroadcasting(){
         broadcastingThread.stopThread();
+        updateNotificationAfterBroadcasting();
         Toast.makeText(thisService, "Stopping broadcasting", Toast.LENGTH_SHORT).show();
     }
 
@@ -110,6 +107,7 @@ public class ProxomService extends Service {
         player.setLooping(true);
         player.start();
 
+        serverAddress = intent.getStringExtra("serverAddress");
         broadcastingThread.startThread();
         proxyThread.startThread(serverAddress);
 
@@ -151,7 +149,7 @@ public class ProxomService extends Service {
         }
     }
 
-    void createNotification(){
+    private void createNotification(){
 
         buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
         buttonIntent.putExtra("action", "STOP_BROADCASTING");
@@ -173,7 +171,7 @@ public class ProxomService extends Service {
     }
 
 
-    void updateNotificationAfterBroadcasting(){
+    private void updateNotificationAfterBroadcasting(){
         buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
         buttonIntent.putExtra("action", "STOP_PROXY");
         buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);

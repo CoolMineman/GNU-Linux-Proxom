@@ -36,10 +36,14 @@ public class MainActivity extends AppCompatActivity {
     private EditText ipAddressServer = null;
     private TextView statusBroadcasting = null;
     private TextView statusProxy = null;
+    private Intent intentProxomStart = null;
+    private Intent intentProxomStop = null;
 
     private Handler activityHandler = null;
 
     private volatile boolean waitForRefresh = false;
+
+    private ProxomService proxomService = null;
 
 
 
@@ -64,8 +68,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (!waitForRefresh) {
-                    ProxomService.setServerAddress(ipAddressServer.getText().toString());
-                    ContextCompat.startForegroundService(getApplicationContext(), new Intent(getApplicationContext(), ProxomService.class));
+                    intentProxomStart = new Intent(getApplicationContext(), ProxomService.class);
+                    intentProxomStart.putExtra("serverAddress", ipAddressServer.getText().toString());
+                    ContextCompat.startForegroundService(getApplicationContext(), intentProxomStart);
 
                     waitForRefresh = true;
                 }
@@ -75,14 +80,15 @@ public class MainActivity extends AppCompatActivity {
         buttonStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopService(new Intent(getApplicationContext(), ProxomService.class));
+                intentProxomStop = new Intent(getApplicationContext(), ProxomService.class);
+                stopService(intentProxomStop);
             }
         });
 
         buttonStopBroadcasting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ProxomService.stopBroadcasting();
+                ProxomService.getInstance().stopBroadcasting();
             }
         });
 
@@ -106,8 +112,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startActivityHandler(){
-        boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
-        boolean currentProxyStatus = ProxomService.getProxyStatus();
+
+        boolean currentBroadcastingStatus = false;
+        boolean currentProxyStatus = false;
+
+        proxomService = ProxomService.getInstance();
+        if (proxomService != null) {
+            currentBroadcastingStatus = proxomService.getBroadcastingStatus();
+            currentProxyStatus = proxomService.getProxyStatus();
+        }
 
         if (currentBroadcastingStatus) {
             statusBroadcasting.setText("Broadcasting: running");
@@ -160,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (ipAddressServer.getText().toString().trim().length() == 0 && (currentProxyStatus || currentBroadcastingStatus))
-            ipAddressServer.setText(ProxomService.getServerAddress());
+            ipAddressServer.setText(proxomService.getServerAddress());
 
 
         waitForRefresh = false;
@@ -168,9 +181,14 @@ public class MainActivity extends AppCompatActivity {
         activityHandler.postDelayed(new Thread() {
             @Override
             public void run() {
-                boolean currentBroadcastingStatus = ProxomService.getBroadcastingStatus();
-                boolean currentProxyStatus = ProxomService.getProxyStatus();
+                boolean currentBroadcastingStatus = false;
+                boolean currentProxyStatus = false;
 
+                proxomService = ProxomService.getInstance();
+                if (proxomService != null) {
+                    currentBroadcastingStatus = proxomService.getBroadcastingStatus();
+                    currentProxyStatus = proxomService.getProxyStatus();
+                }
                 if (currentBroadcastingStatus) {
                     statusBroadcasting.setText("Broadcasting: running");
                     statusBroadcasting.setTypeface(null, Typeface.BOLD);
@@ -222,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (ipAddressServer.getText().toString().trim().length() == 0 && (currentProxyStatus || currentBroadcastingStatus))
-                    ipAddressServer.setText(ProxomService.getServerAddress());
+                    ipAddressServer.setText(proxomService.getServerAddress());
 
                 waitForRefresh = false;
 

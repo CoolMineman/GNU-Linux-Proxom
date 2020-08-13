@@ -13,8 +13,7 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         String action = intent.getStringExtra("action");
 
         if (action.equals("STOP_BROADCASTING")) {
-            ProxomService.stopBroadcasting();
-            ProxomService.getInstance().updateNotificationAfterBroadcasting();
+            ProxomService.getInstance().stopBroadcasting();
         } else if (action.equals("STOP_PROXY")) {
             context.stopService(new Intent(context.getApplicationContext(), ProxomService.class));
         }

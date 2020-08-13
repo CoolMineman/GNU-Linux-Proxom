@@ -61,7 +61,7 @@ public class BroadcastingThread extends Thread {
         runningScheduledThread = Executors.newScheduledThreadPool(1);
         runningScheduledThread.scheduleAtFixedRate(this, 0, TIMEOUT, TimeUnit.SECONDS);
 
-        ProxomService.setBroadcastingStatus(true);
+        ProxomService.getInstance().setBroadcastingStatus(true);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BroadcastingThread extends Thread {
 
     public void stopThread(){
         runningScheduledThread.shutdown();
-        ProxomService.setBroadcastingStatus(false);
+        ProxomService.getInstance().setBroadcastingStatus(false);
     }
 
 }
