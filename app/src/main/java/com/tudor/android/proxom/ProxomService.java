@@ -1,7 +1,6 @@
 package com.tudor.android.proxom;
 
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,18 +8,15 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class ProxomService extends Service {
-    private MediaPlayer player;
     private final long FINISHING_PROXY_TIME = 1500;
     private final long CHANGE_BUTTON_TIME = 1000;
     private final long CHECK_TIME = 2500;
@@ -47,6 +43,8 @@ public class ProxomService extends Service {
 
     private final String CHANNEL_ID = "ProxomNotification";
     private final int NOTIFICATION_ID = 1;
+
+    private volatile boolean notificationBroadcastingButtonShown = false;
 
     static ProxomService getInstance(){
         return thisService;
@@ -103,10 +101,6 @@ public class ProxomService extends Service {
         createNotificationChannel();
         createNotification();
 
-        player = MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
-        player.setLooping(true);
-        player.start();
-
         serverAddress = intent.getStringExtra("serverAddress");
         broadcastingThread.startThread();
         proxyThread.startThread(serverAddress);
@@ -119,7 +113,6 @@ public class ProxomService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        player.stop();
         broadcastingThread.stopThread();
         proxyThread.stopThread();
 
@@ -179,6 +172,7 @@ public class ProxomService extends Service {
         buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificationBuilder.clearAllActions();
+        notificationBroadcastingButtonShown = false;
 
         notificationBuilder
                 .setContentTitle("Proxy is running");
@@ -191,13 +185,17 @@ public class ProxomService extends Service {
         notificationUpdateHandler.postDelayed(new Thread() {
             @Override
             public void run() {
-                notificationBuilder
-                        .addAction(0, "Stop proxy", buttonPendingIntent);
 
-                notification = notificationBuilder.build();
+                if (!notificationBroadcastingButtonShown) {
+                    notificationBuilder
+                            .addAction(0, "Stop proxy", buttonPendingIntent);
 
-                startForeground(NOTIFICATION_ID, notification);
+                    notification = notificationBuilder.build();
 
+                    notificationBroadcastingButtonShown = true;
+
+                    startForeground(NOTIFICATION_ID, notification);
+                }
 
                 notificationUpdateHandler.postDelayed(new Thread() {
                     @Override
