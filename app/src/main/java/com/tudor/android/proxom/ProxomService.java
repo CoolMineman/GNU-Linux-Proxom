@@ -38,13 +38,17 @@ public class ProxomService extends Service {
     private Notification notification = null;
     private CustomNotificationBuilder notificationBuilder = null;
 
-    private Intent buttonIntent = null;
-    private PendingIntent buttonPendingIntent = null;
+    private Intent notificationButtonIntent = null;
+    private PendingIntent notificationButtonPendingIntent = null;
 
     private final String CHANNEL_ID = "ProxomNotification";
     private final int NOTIFICATION_ID = 1;
 
     private volatile boolean notificationBroadcastingButtonShown = false;
+    private volatile boolean notificationStopBroadcastingButtonShown = false;
+
+
+
 
     static ProxomService getInstance(){
         return thisService;
@@ -74,6 +78,12 @@ public class ProxomService extends Service {
         broadcastingThread.stopThread();
         updateNotificationAfterBroadcasting();
         Toast.makeText(thisService, "Stopping broadcasting", Toast.LENGTH_SHORT).show();
+    }
+
+    void startBroadcasting(){
+        broadcastingThread.startThread();
+        updateNotificationBeforeBroadcasting();
+        Toast.makeText(thisService, "Starting broadcasting", Toast.LENGTH_SHORT).show();
     }
 
     @Nullable
@@ -145,31 +155,22 @@ public class ProxomService extends Service {
     }
 
     private void createNotification(){
-
-        buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
-        buttonIntent.putExtra("action", "STOP_BROADCASTING");
-        buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
         notificationBuilder.clearAllActions();
 
         notificationBuilder
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.mipmap.ic_launcher))
-                .setContentTitle("Proxy and broadcasting are running")
                 .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .addAction(0, "Stop broadcasting", buttonPendingIntent);
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        notification = notificationBuilder.build();
-
-        startForeground(NOTIFICATION_ID, notification);
+        updateNotificationBeforeBroadcasting();
     }
 
 
     private void updateNotificationAfterBroadcasting(){
-        buttonIntent = new Intent(thisService, NotificationActionReceiver.class);
-        buttonIntent.putExtra("action", "STOP_PROXY");
-        buttonPendingIntent = PendingIntent.getBroadcast(thisService, 1, buttonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationButtonIntent = new Intent(thisService, NotificationActionReceiver.class);
+        notificationButtonIntent.putExtra("action", "STOP_PROXY");
+        notificationButtonPendingIntent = PendingIntent.getBroadcast(thisService, 1, notificationButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificationBuilder.clearAllActions();
         notificationBroadcastingButtonShown = false;
@@ -188,7 +189,7 @@ public class ProxomService extends Service {
 
                 if (!notificationBroadcastingButtonShown) {
                     notificationBuilder
-                            .addAction(0, "Stop proxy", buttonPendingIntent);
+                            .addAction(0, "Stop proxy", notificationButtonPendingIntent);
 
                     notification = notificationBuilder.build();
 
@@ -201,11 +202,54 @@ public class ProxomService extends Service {
                     @Override
                     public void run() {
                         if (getBroadcastingStatus())
-                            createNotification();
+                            updateNotificationBeforeBroadcasting();
                     }
                 }, CHECK_TIME);
             }
         },CHANGE_BUTTON_TIME);
     }
+
+    private void updateNotificationBeforeBroadcasting(){
+        notificationButtonIntent = new Intent(thisService, NotificationActionReceiver.class);
+        notificationButtonIntent.putExtra("action", "STOP_BROADCASTING");
+        notificationButtonPendingIntent = PendingIntent.getBroadcast(thisService, 1, notificationButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notificationBuilder.clearAllActions();
+        notificationStopBroadcastingButtonShown = false;
+
+        notificationBuilder
+                .setContentTitle("Proxy and broadcasting are running");
+
+
+        notification = notificationBuilder.build();
+
+        startForeground(NOTIFICATION_ID, notification);
+
+        notificationUpdateHandler.postDelayed(new Thread() {
+            @Override
+            public void run() {
+
+                if (!notificationBroadcastingButtonShown) {
+                    notificationBuilder
+                            .addAction(0, "Stop broadcasting", notificationButtonPendingIntent);
+
+                    notification = notificationBuilder.build();
+
+                    notificationStopBroadcastingButtonShown = true;
+
+                    startForeground(NOTIFICATION_ID, notification);
+                }
+
+                notificationUpdateHandler.postDelayed(new Thread() {
+                    @Override
+                    public void run() {
+                        if (!getBroadcastingStatus())
+                            updateNotificationAfterBroadcasting();
+                    }
+                }, CHECK_TIME);
+            }
+        },CHANGE_BUTTON_TIME);
+    }
+
 
 }

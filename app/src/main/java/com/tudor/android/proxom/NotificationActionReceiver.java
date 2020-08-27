@@ -13,8 +13,12 @@ public class NotificationActionReceiver extends BroadcastReceiver {
 
         if (action.equals("STOP_BROADCASTING")) {
             ProxomService.getInstance().stopBroadcasting();
-        } else if (action.equals("STOP_PROXY")) {
-            context.stopService(new Intent(context.getApplicationContext(), ProxomService.class));
+        } else {
+            if (action.equals("STOP_PROXY")) {
+                context.stopService(new Intent(context.getApplicationContext(), ProxomService.class));
+            }else if (action.equals("START_BROADCASTING")){
+                ProxomService.getInstance().startBroadcasting();
+            }
         }
     }
 }
