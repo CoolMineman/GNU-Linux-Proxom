@@ -7,4 +7,4 @@ cd ..
 rm -r ./build
 mkdir build
 cp ./app/target/gnu-linux-proxom*.jar ./build
-cp ./jni/proxom.so ./build
+cp ./jni/libproxom.so ./build

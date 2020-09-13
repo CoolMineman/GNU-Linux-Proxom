@@ -140,7 +140,7 @@ JNIEXPORT void JNICALL Java_com_tudor_android_proxom_ProxyThread_runProxy
     char *destinationHost = (*pEnv)->GetStringUTFChars(pEnv, javaServerAddress, 0);
 
     running = 1;
-    fp = fopen("/sdcard/ProxomProxyLog.txt", "w");
+    fp = fopen("./ProxomProxyLog.txt", "w");
 
 
     struct clients_struct   *c  = NULL,
