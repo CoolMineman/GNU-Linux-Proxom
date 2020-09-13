@@ -10,7 +10,7 @@ app/buildNumber.properties
 app/.mvn/timing.properties
 
 #native
-jni/proxom.so
+jni/libproxom.so
 
 #build
 build
