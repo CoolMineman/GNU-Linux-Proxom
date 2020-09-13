@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">Proxom</string>
-    <string name="textview"><b>Broadcasting: stopped</b></string>
-    <string name="textview2"><b>Proxy: stopped</b></string>
-    <string name="server_ip_address">Server Ip Address</string>
-    <string name="stop_broadcasting">Stop broadcasting</string>
-    <string name="button">Start</string>
-    <string name="buttonStop">Stop</string>
-</resources>

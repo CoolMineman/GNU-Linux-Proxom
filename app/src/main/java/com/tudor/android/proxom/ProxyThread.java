@@ -21,11 +21,7 @@ public class ProxyThread extends Thread {
 
     @Override
     public void run(){
-        ProxomService.getInstance().setProxyStatus(true);
-
         runProxy(serverAddress);
-
-        ProxomService.getInstance().setProxyStatus(false);
     }
 
     public void stopThread(){

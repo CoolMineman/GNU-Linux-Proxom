@@ -30,7 +30,7 @@ public class BroadcastingThread extends Thread {
     PrintStream writingStream = null;
 
     public void startThread(){
-        writingFile = new File ("/sdcard/ProxomBroadcastingLog.txt");
+        writingFile = new File ("./ProxomBroadcastingLog.txt");
         try {
             writingStream = new PrintStream(writingFile);
         } catch (FileNotFoundException e) {
@@ -60,8 +60,6 @@ public class BroadcastingThread extends Thread {
 
         runningScheduledThread = Executors.newScheduledThreadPool(1);
         runningScheduledThread.scheduleAtFixedRate(this, 0, TIMEOUT, TimeUnit.SECONDS);
-
-        ProxomService.getInstance().setBroadcastingStatus(true);
     }
 
     @Override
@@ -76,7 +74,6 @@ public class BroadcastingThread extends Thread {
 
     public void stopThread(){
         runningScheduledThread.shutdown();
-        ProxomService.getInstance().setBroadcastingStatus(false);
     }
 
 }
